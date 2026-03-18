@@ -1,0 +1,6 @@
+演算法: lightgbm
+lambdamart_params = {
+    'objective': 'lambdarank',
+    'metric': 'ndcg',
+    'boosting_type': 'gbdt'
+}

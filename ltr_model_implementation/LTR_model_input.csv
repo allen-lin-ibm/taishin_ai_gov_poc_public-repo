@@ -1,0 +1,9 @@
+﻿cust_id,product_id(has 9 different categories),share_feature_1,product_feature_2,"relevance_score(1,2,3)
+3 > successfully applied prodcut in recent month
+2 > in the applied process but not successfully applied in recent month
+1 > only browse prodcut info via bank app in recent month"
+a01,pl,100,32,1
+a01,hy,100,21,3
+b01,pl,500,0,3
+b01,hy,500,74,1
+b01,ins,500,32,1
