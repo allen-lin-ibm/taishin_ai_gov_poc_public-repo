@@ -4,12 +4,13 @@ A proof-of-concept project demonstrating AI model governance capabilities for Ta
 
 ## Overview
 
-This repository contains two main components:
+This repository contains three main components:
 
 1. **Model Migration**: Converting legacy TensorFlow H5 models to SavedModel format
 2. **LTR Model Implementation**: Developing and deploying Learning-to-Rank models using LightGBM/XGBoost
+3. **Orchestration Pipeline**: End-to-end automated workflow for data generation, model training, and deployment
 
-Both components include complete end-to-end workflows from model development to deployment on IBM watsonx.ai platform.
+All components include complete end-to-end workflows from model development to deployment on IBM watsonx.ai platform.
 
 ## Project Structure
 
@@ -30,6 +31,12 @@ Both components include complete end-to-end workflows from model development to 
 │   └── 台新提供資料/
 │       ├── 演算法資訊.txt
 │       └── LTR_data_structure.xlsx
+│
+├── orchestration_pipeline/
+│   ├── 1_data_generation.ipynb
+│   ├── 2_model_training_and_deployment.ipynb
+│   ├── 3_deployment_testing.ipynb
+│   └── README.md
 │
 ├── LICENSE
 └── README.md
@@ -70,6 +77,23 @@ Learning-to-Rank model development using LightGBM LambdaMART with XGBoost conver
 - watsonx.ai deployment
 - Online scoring and testing
 
+### 3. Orchestration Pipeline
+
+Automated end-to-end workflow demonstrating complete model lifecycle management:
+
+- **Pipeline**: Data Generation → Model Training → Deployment → Testing
+- **Model**: TensorFlow multi-output classification model
+- **Automation**: Automatic deployment and testing
+- **Integration**: Full watsonx.ai SDK integration
+
+**Workflow includes:**
+- Synthetic training data generation and upload
+- Automatic data discovery from project assets
+- Model training and SavedModel conversion
+- Automated deployment to watsonx.ai
+- Batch prediction testing and validation
+- Result persistence and analysis
+
 ## Getting Started
 
 ### Prerequisites
@@ -106,6 +130,25 @@ pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter
 2. Configure watsonx.ai credentials
 3. Run all cells to train, convert, and deploy the LTR model
 
+#### Orchestration Pipeline
+
+**Complete 3-step workflow:**
+
+1. **Data Generation**: Open [`orchestration_pipeline/1_data_generation.ipynb`](orchestration_pipeline/1_data_generation.ipynb)
+   - Generates synthetic training data
+   - Uploads to watsonx.ai project assets
+
+2. **Model Training & Deployment**: Open [`orchestration_pipeline/2_model_training_and_deployment.ipynb`](orchestration_pipeline/2_model_training_and_deployment.ipynb)
+   - Automatically finds latest training data
+   - Trains and converts model to SavedModel
+   - Deploys to watsonx.ai automatically
+
+3. **Deployment Testing**: Open [`orchestration_pipeline/3_deployment_testing.ipynb`](orchestration_pipeline/3_deployment_testing.ipynb)
+   - Tests deployed model with batch predictions
+   - Saves and analyzes results
+
+See [`orchestration_pipeline/README.md`](orchestration_pipeline/README.md) for detailed documentation.
+
 ## watsonx.ai Integration
 
 Both workflows support deployment to IBM watsonx.ai platform with:
@@ -127,6 +170,11 @@ Refer to the [IBM watsonx.ai Python SDK Documentation](https://ibm.github.io/wat
 - `ltr_scoring_input_data_example.json`: Sample scoring input
 - `演算法資訊.txt`: Algorithm configuration details
 - `LTR_data_structure.xlsx`: Data structure documentation
+
+### Orchestration Pipeline
+- Generated training data: `model_input_data_YYYYMMDD_HHMMSS.csv` (auto-generated)
+- Prediction results: `prediction_results_YYYYMMDD_HHMMSS.json` (auto-generated)
+- Model archive: `{MODEL_NAME}.zip` (auto-generated)
 
 ## License
 
