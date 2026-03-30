@@ -4,11 +4,12 @@ A proof-of-concept project demonstrating AI model governance capabilities for Ta
 
 ## Overview
 
-This repository contains three main components:
+This repository contains four main components:
 
 1. **Model Migration**: Converting legacy TensorFlow H5 models to SavedModel format
 2. **LTR Model Implementation**: Developing and deploying Learning-to-Rank models using LightGBM/XGBoost
 3. **Orchestration Pipeline**: End-to-end automated workflow for data generation, model training, and deployment
+4. **Parameter Set Showcase**: Demonstration of watsonx.ai Parameter Sets usage and management
 
 All components include complete end-to-end workflows from model development to deployment on IBM watsonx.ai platform.
 
@@ -37,6 +38,9 @@ All components include complete end-to-end workflows from model development to d
 │   ├── 2_model_training_and_deployment.ipynb
 │   ├── 3_deployment_testing.ipynb
 │   └── README.md
+│
+├── parameter_set_showcase/
+│   └── parameter_set_showcase.ipynb
 │
 ├── LICENSE
 └── README.md
@@ -94,6 +98,21 @@ Automated end-to-end workflow demonstrating complete model lifecycle management:
 - Batch prediction testing and validation
 - Result persistence and analysis
 
+### 4. Parameter Set Showcase
+
+Demonstration of IBM watsonx.ai Parameter Sets functionality:
+
+- **Purpose**: Centralized parameter management for ML workflows
+- **Features**: Parameter storage, retrieval, and version control
+- **Use Cases**: Configuration management, experiment tracking, pipeline parameters
+
+**Workflow includes:**
+- Connecting to watsonx.ai (CP4D and IBM Cloud)
+- Listing all parameter sets in a project/space
+- Retrieving parameter set details by ID
+- Accessing parameter sets by name
+- Viewing parameter values and configurations
+
 ## Getting Started
 
 ### Prerequisites
@@ -118,19 +137,19 @@ pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter
 
 ### Usage
 
-#### Model Migration
+#### 1️⃣ Model Migration
 
 1. Open [`model_migration/h5_model_migration_watsonx_ai_complete_flow.ipynb`](model_migration/h5_model_migration_watsonx_ai_complete_flow.ipynb)
 2. Configure watsonx.ai credentials
 3. Run all cells to execute the complete migration pipeline
 
-#### LTR Model Development
+#### 2️⃣ LTR Model Development
 
 1. Open [`ltr_model_implementation/lightgbm_ltr_watsonx_ai_complete_flow.ipynb`](ltr_model_implementation/lightgbm_ltr_watsonx_ai_complete_flow.ipynb) or [`ltr_model_implementation/train_xgboost_ltr_watsonx_ai_complete_flow.ipynb`](ltr_model_implementation/train_xgboost_ltr_watsonx_ai_complete_flow.ipynb)
 2. Configure watsonx.ai credentials
 3. Run all cells to train, convert, and deploy the LTR model
 
-#### Orchestration Pipeline
+#### 3️⃣ Orchestration Pipeline
 
 **Complete 3-step workflow:**
 
@@ -148,6 +167,16 @@ pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter
    - Saves and analyzes results
 
 See [`orchestration_pipeline/README.md`](orchestration_pipeline/README.md) for detailed documentation.
+
+#### 4️⃣ Parameter Set Management
+
+1. Open [`parameter_set_showcase/parameter_set_showcase.ipynb`](parameter_set_showcase/parameter_set_showcase.ipynb)
+2. Configure watsonx.ai credentials (CP4D or IBM Cloud)
+3. Set default project or deployment space
+4. Run cells to explore parameter set operations:
+   - List all parameter sets
+   - Retrieve by ID or name
+   - View parameter configurations
 
 ## watsonx.ai Integration
 
