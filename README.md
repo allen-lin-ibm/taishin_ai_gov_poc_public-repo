@@ -265,6 +265,6 @@ All rights reserved.
 
 <br>
 
-<sub><i>This README was written with help from <a href="https://www.ibm.com/products/bob">IBM Bob</a>.</i></sub>
+<sub><i>This README was written with help from <a href="https://bob.ibm.com/">IBM Bob</a>.</i></sub>
 
 </div>
