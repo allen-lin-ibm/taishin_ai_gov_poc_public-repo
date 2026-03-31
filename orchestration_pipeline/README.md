@@ -1,264 +1,270 @@
-# Orchestration Pipeline for watsonx.ai Model Deployment
+# watsonx.ai 模型部署編排流程
 
-This directory contains three independent Jupyter notebooks that demonstrate a complete end-to-end workflow for training and deploying TensorFlow models to watsonx.ai.
+本目錄包含三個獨立的 Jupyter 筆記本，展示訓練和部署 TensorFlow 模型至 watsonx.ai 的完整端到端工作流程。
 
-## 📋 Overview
+## 📋 概述
 
-The orchestration pipeline consists of three main notebooks:
+編排流程包含三個主要筆記本：
 
-1. **`1_data_generation.ipynb`** - Data generation and upload to watsonx.ai project assets
-2. **`2_model_training_and_deployment.ipynb`** - Model training, conversion, and storage to deployment space
-3. **`3_deployment_testing.ipynb`** - Batch prediction testing using deployment endpoint
+1. **`1_data_generation.ipynb`** - 資料產生並上傳至 watsonx.ai 專案資產
+2. **`2_model_training_and_deployment.ipynb`** - 模型訓練、轉換和儲存至部署空間
+3. **`3_deployment_testing.ipynb`** - 使用部署端點進行批次預測測試
 
-## 🔧 Prerequisites
+## 🔧 先決條件
 
-### Required Environment Variables
+### 必要的環境變數
 
-Set the following environment variables before running the notebooks:
+執行筆記本前設定以下環境變數：
 
 ```bash
-# For notebook 1
+# 用於筆記本 1
 export PROJECT_ID="your-watsonx-project-id"
 export WX_API_KEY="your-watsonx-api-key"
 
-# For notebook 2
-export MODEL_NAME="your-model-name"  # e.g., "buy_model_exchange"
+# 用於筆記本 2
+export MODEL_NAME="your-model-name"  # 例如："buy_model_exchange"
 export PROJECT_ID="your-watsonx-project-id"
 export SPACE_ID="your-watsonx-deployment-space-id"
 export WX_API_KEY="your-watsonx-api-key"
 
-# For notebook 3
+# 用於筆記本 3
 export DEPLOYMENT_NAME="buy_model_exchange_deployment"
 export SPACE_ID="your-watsonx-deployment-space-id"
 export WX_API_KEY="your-watsonx-api-key"
 ```
 
-### Required Python Packages
+### Python 環境
 
-```bash
-pip install numpy pandas tensorflow ibm-watsonx-ai requests
-```
+這些 notebook 設計為在 **watsonx.ai 平台**上執行，平台已預先安裝所需的套件：
+- numpy
+- pandas
+- tensorflow
+- ibm-watsonx-ai
+- requests
 
-Or use the project's `pyproject.toml`:
+無需額外安裝套件。
 
-```bash
-uv sync
-```
+## 📓 筆記本 1：資料產生
 
-## 📓 Notebook 1: Data Generation
+**檔案**：`1_data_generation.ipynb`
 
-**File**: `1_data_generation.ipynb`
+### 目的
+產生符合模型輸入架構的合成訓練資料，並上傳至 watsonx.ai 專案資產。
 
-### Purpose
-Generates synthetic training data matching the model's input schema and uploads it to watsonx.ai project assets.
+### 工作流程
+1. **設定和配置** - 匯入函式庫並載入環境變數
+2. **定義輸入配置** - 配置 32 個輸入特徵（嵌入、時間序列、連續）
+3. **產生合成資料** - 建立 100 個合成資料樣本
+4. **儲存為 CSV** - 轉換為 DataFrame 並在本地儲存
+5. **連接至 watsonx.ai** - 使用憑證建立連接
+6. **上傳至專案資產** - 將 CSV 檔案上傳至專案
+7. **驗證上傳** - 確認上傳成功
 
-### Workflow
-1. **Setup and Configuration** - Import libraries and load environment variables
-2. **Define Input Configuration** - Configure 32 input features (embeddings, time series, continuous)
-3. **Generate Synthetic Data** - Create 100 samples of synthetic data
-4. **Save as CSV** - Convert to DataFrame and save locally
-5. **Connect to watsonx.ai** - Establish connection using credentials
-6. **Upload to Project Assets** - Upload CSV file to project
-7. **Verify Upload** - Confirm successful upload
+### 輸出
+- CSV 檔案：`model_input_data_YYYYMMDD_HHMMSS.csv`
+- watsonx.ai 專案中的資料資產及 Asset ID
 
-### Output
-- CSV file: `model_input_data_YYYYMMDD_HHMMSS.csv`
-- Data asset in watsonx.ai project with Asset ID
+### 主要功能
+- 為 32 個模型輸入產生資料：
+  - 9 個業務聯絡特徵（BLOCK_MD_BRN_CONTACTS）
+  - 3 個時間序列輸入（MD_CASH_FLOW、MD_CUS_EXCH、MD_CUS_LOAN）
+  - 8 個客戶風險特徵（BLOCK_MD_CUS_RISK）
+  - 7 個客戶風格特徵（BLOCK_MD_CUS_STYLE）
+  - 3 個額外時間序列（MD_DEP_AUM、MD_NEW_INVST、MD_PDH_AUM）
+- 處理類別（int）和連續（float）特徵
+- 將多維陣列展平以供 CSV 儲存
 
-### Key Features
-- Generates data for 32 model inputs:
-  - 9 business contact features (BLOCK_MD_BRN_CONTACTS)
-  - 3 time series inputs (MD_CASH_FLOW, MD_CUS_EXCH, MD_CUS_LOAN)
-  - 8 customer risk features (BLOCK_MD_CUS_RISK)
-  - 7 customer style features (BLOCK_MD_CUS_STYLE)
-  - 3 additional time series (MD_DEP_AUM, MD_NEW_INVST, MD_PDH_AUM)
-- Handles both categorical (int) and continuous (float) features
-- Flattens multi-dimensional arrays for CSV storage
+## 📓 筆記本 2：模型訓練、儲存和部署
 
-## 📓 Notebook 2: Model Training, Storage, and Deployment
+**檔案**：`2_model_training_and_deployment.ipynb`
 
-**File**: `2_model_training_and_deployment.ipynb`
+### 目的
+載入訓練資料、訓練/微調 TensorFlow 模型、轉換為 SavedModel 格式、儲存至 watsonx.ai 部署空間，並自動部署。
 
-### Purpose
-Loads training data, trains/fine-tunes a TensorFlow model, converts to SavedModel format, stores it to watsonx.ai deployment space, and automatically deploys it.
+### 工作流程
+1. **設定和配置** - 匯入函式庫並載入環境變數
+2. **連接至 watsonx.ai** - 建立連接
+3. **尋找最新訓練資料** - 在專案資產中搜尋最新的 CSV 檔案
+4. **下載並載入資料** - 將訓練資料載入 DataFrame
+5. **載入預訓練模型** - 載入 H5 模型或建立示範模型
+6. **編譯和訓練** - 訓練/微調模型
+7. **轉換為 SavedModel** - 轉換為 TensorFlow SavedModel 格式
+8. **儲存至部署空間** - 將模型儲存為資產
+9. **部署模型** - 建立線上部署並等待就緒
 
-### Workflow
-1. **Setup and Configuration** - Import libraries and load environment variables
-2. **Connect to watsonx.ai** - Establish connection
-3. **Find Latest Training Data** - Search project assets for latest CSV file
-4. **Download and Load Data** - Load training data into DataFrame
-5. **Load Pre-trained Model** - Load H5 model or create demonstration model
-6. **Compile and Train** - Train/fine-tune the model
-7. **Convert to SavedModel** - Convert to TensorFlow SavedModel format
-8. **Store to Deployment Space** - Store model as asset
-9. **Deploy Model** - Create online deployment and wait for it to be ready
+### 輸出
+- SavedModel 目錄：`{MODEL_NAME}/`
+- 壓縮檔案：`{MODEL_NAME}.zip`
+- 儲存在 watsonx.ai 部署空間中的模型及 Model ID
+- 建立的線上部署及 Deployment ID
 
-### Output
-- SavedModel directory: `{MODEL_NAME}/`
-- Compressed archive: `{MODEL_NAME}.zip`
-- Model stored in watsonx.ai deployment space with Model ID
-- Online deployment created with Deployment ID
+### 主要功能
+- **自動資料探索**：自動尋找並使用符合模式 `model_input_data_*` 或 `training_data_*` 的最新訓練資料
+- **彈性模型載入**：支援載入預訓練的 H5 模型或建立示範模型
+- **自動部署**：建立線上部署並等待就緒
+- **部署更新**：如果存在相同模型名稱的部署，會自動替換
+- **完整日誌記錄**：詳細的進度追蹤和摘要資訊
 
-### Key Features
-- **Automatic Data Discovery**: Automatically finds and uses the latest training data matching pattern `model_input_data_*` or `training_data_*`
-- **Flexible Model Loading**: Supports loading pre-trained H5 models or creating demonstration models
-- **Automatic Deployment**: Creates online deployment and waits for it to be ready
-- **Deployment Update**: Automatically replaces existing deployment if one exists with the same model name
-- **Comprehensive Logging**: Detailed progress tracking and summary information
+### 重要注意事項
+本筆記本現在會在儲存模型後**自動部署**。部署名稱將為 `{MODEL_NAME}_deployment`。如果已存在同名部署，將會被刪除並重新建立。
 
-### Important Note
-This notebook now **automatically deploys** the model after storing it. The deployment name will be `{MODEL_NAME}_deployment`. If a deployment with this name already exists, it will be deleted and recreated.
+## 📓 筆記本 3：部署測試
 
-## 📓 Notebook 3: Deployment Testing
+**檔案**：`3_deployment_testing.ipynb`
 
-**File**: `3_deployment_testing.ipynb`
+### 目的
+透過自動尋找部署並執行批次預測來測試已部署的模型。
 
-### Purpose
-Tests a deployed model by automatically finding its deployment and performing batch predictions.
+### 工作流程
+1. **設定和配置** - 匯入函式庫
+2. **載入環境變數** - 載入模型名稱、空間 ID 和 API 金鑰
+3. **連接至 watsonx.ai** - 建立連接並設定預設空間
+4. **尋找部署** - 依模型名稱自動搜尋部署
+5. **定義輸入配置** - 配置 32 個輸入特徵
+6. **產生測試樣本** - 建立 5 個測試樣本
+7. **準備評分負載** - 格式化資料以進行批次預測
+8. **發送批次預測請求** - 使用 watsonx.ai SDK 進行評分
+9. **分析結果** - 顯示和分析預測
+10. **儲存結果** - 將預測儲存至 JSON 檔案
 
-### Workflow
-1. **Setup and Configuration** - Import libraries
-2. **Load Environment Variables** - Load model name, space ID, and API key
-3. **Connect to watsonx.ai** - Establish connection and set default space
-4. **Find Deployment** - Automatically search for deployment by model name
-5. **Define Input Configuration** - Configure 32 input features
-6. **Generate Test Samples** - Create 5 test samples
-7. **Prepare Scoring Payload** - Format data for batch prediction
-8. **Send Batch Prediction Request** - Score using watsonx.ai SDK
-9. **Analyze Results** - Display and analyze predictions
-10. **Save Results** - Save predictions to JSON file
+### 輸出
+- 在筆記本中顯示的預測結果
+- JSON 檔案：`prediction_results_YYYYMMDD_HHMMSS.json`
 
-### Output
-- Prediction results displayed in notebook
-- JSON file: `prediction_results_YYYYMMDD_HHMMSS.json`
+### 主要功能
+- **自動部署探索**：依模型名稱搜尋部署
+- **批次預測**：在單一請求中測試多個樣本
+- **watsonx.ai SDK 整合**：使用官方 SDK 進行評分
+- **結果持久化**：自動儲存帶有時間戳記的結果
+- **錯誤處理**：完整的錯誤處理和有用的訊息
 
-### Key Features
-- **Automatic Deployment Discovery**: Searches for deployment by model name
-- **Batch Predictions**: Tests multiple samples in a single request
-- **watsonx.ai SDK Integration**: Uses official SDK for scoring
-- **Result Persistence**: Automatically saves results with timestamp
-- **Error Handling**: Comprehensive error handling and helpful messages
+### 重要注意事項
+本筆記本需要模型已部署（筆記本 2 會自動執行此操作）。它將：
+1. 搜尋名稱中包含 `DEPLOYMENT_NAME` 的部署
+2. 使用找到的部署進行評分
+3. 如果找不到目標部署，則顯示可用的部署
 
-### Important Note
-This notebook requires the model to be deployed (which notebook 2 does automatically). It will:
-1. Search for a deployment containing the `DEPLOYMENT_NAME` in its name
-2. Use the found deployment for scoring
-3. Display available deployments if the target is not found
+## 🚀 使用方式
 
-## 🚀 Usage
+**重要**：這些 notebook 設計為在 **watsonx.ai 平台**上執行，而非本地環境。
 
-### Step 1: Generate Training Data
+### 步驟 1：在 watsonx.ai 上開啟專案
 
-```bash
-# Open and run notebook 1
-jupyter notebook 1_data_generation.ipynb
-```
+1. 登入 watsonx.ai 平台
+2. 開啟或建立一個專案
+3. 將這三個 notebook 上傳至專案
 
-This will:
-- Generate 100 synthetic samples
-- Save as CSV file
-- Upload to watsonx.ai project assets
-- Display Asset ID for reference
+### 步驟 2：設定環境變數
 
-### Step 2: Train, Store, and Deploy Model
+在 watsonx.ai 專案中設定環境變數：
 
-```bash
-# Open and run notebook 2
-jupyter notebook 2_model_training_and_deployment.ipynb
-```
+1. 進入專案設定
+2. 在環境變數區域新增：
+   - `PROJECT_ID`：您的專案 ID
+   - `SPACE_ID`：您的部署空間 ID
+   - `WX_API_KEY`：您的 API 金鑰
+   - `MODEL_NAME`：模型名稱（例如："buy_model_exchange"）
+   - `DEPLOYMENT_NAME`：部署名稱（例如："buy_model_exchange_deployment"）
 
-This will:
-- Find and load the latest training data
-- Load/create the model
-- Train the model (demonstration workflow)
-- Convert to SavedModel format
-- Store to watsonx.ai deployment space
-- Create online deployment automatically
-- Wait for deployment to be ready
-- Display Model ID and Deployment ID
+### 步驟 3：執行 Notebook 1 - 產生訓練資料
 
-### Step 3: Test Deployed Model
+在 watsonx.ai 平台上開啟並執行 `1_data_generation.ipynb`
 
-```bash
-# Set the deployment name and space ID
-export DEPLOYMENT_NAME="buy_model_exchange_deployment"
-export SPACE_ID="your-space-id"
+這將：
+- 產生 100 個合成樣本
+- 儲存為 CSV 檔案
+- 上傳至 watsonx.ai 專案資產
+- 顯示 Asset ID 供參考
 
-# Open and run notebook 3
-jupyter notebook 3_deployment_testing.ipynb
-```
+### 步驟 4：執行 Notebook 2 - 訓練、儲存和部署模型
 
-This will:
-- Load deployment endpoint from environment variable
-- Generate 5 test samples
-- Send batch prediction request
-- Display and save results
+在 watsonx.ai 平台上開啟並執行 `2_model_training_and_deployment.ipynb`
 
-## 📊 Model Architecture
+這將：
+- 尋找並載入最新的訓練資料
+- 載入/建立模型
+- 訓練模型（示範工作流程）
+- 轉換為 SavedModel 格式
+- 儲存至 watsonx.ai 部署空間
+- 自動建立線上部署
+- 等待部署就緒
+- 顯示 Model ID 和 Deployment ID
 
-The model (`buy_model_exchange`) has:
-- **32 inputs**: Mix of embeddings, time series, and continuous features
-- **3 outputs**: 
-  - `buy_19`: 19-class classification
-  - `order_6`: 6-class classification
-  - `exchange_9`: 9-class classification
-- **Total parameters**: ~1.3M (demonstration model is simplified)
+### 步驟 5：執行 Notebook 3 - 測試已部署的模型
 
-## 🔍 Data Schema
+在 watsonx.ai 平台上開啟並執行 `3_deployment_testing.ipynb`
 
-### Input Features (32 total)
+這將：
+- 從環境變數載入部署資訊
+- 產生 5 個測試樣本
+- 發送批次預測請求
+- 顯示並儲存結果
 
-#### BLOCK_MD_BRN_CONTACTS (9 features)
-- `input_x_o_MD_BRN_CONTACTS`: 16 continuous features
-- `input_x_c_1_MD_BRN_CONTACTS` to `input_x_c_8_MD_BRN_CONTACTS`: 8 categorical features
+## 📊 模型架構
 
-#### Time Series (3 features)
-- `input_x_t_MD_CASH_FLOW`: 12×22 time series
-- `input_x_t_MD_CUS_EXCH`: 12×12 time series
-- `input_x_t_MD_CUS_LOAN`: 12×24 time series
+模型（`buy_model_exchange`）具有：
+- **32 個輸入**：嵌入、時間序列和連續特徵的混合
+- **3 個輸出**：
+  - `buy_19`：19 類別分類
+  - `order_6`：6 類別分類
+  - `exchange_9`：9 類別分類
+- **總參數數量**：約 130 萬（示範模型已簡化）
 
-#### BLOCK_MD_CUS_RISK (9 features)
-- `input_x_o_MD_CUS_RISK`: 1 continuous feature
-- `input_x_c_1_MD_CUS_RISK` to `input_x_c_8_MD_CUS_RISK`: 8 categorical features
+## 🔍 資料架構
 
-#### BLOCK_MD_CUS_STYLE (8 features)
-- `input_x_o_MD_CUS_STYLE`: 35 continuous features
-- `input_x_c_1_MD_CUS_STYLE` to `input_x_c_7_MD_CUS_STYLE`: 7 categorical features
+### 輸入特徵（共 32 個）
 
-#### Additional Time Series (3 features)
-- `input_x_t_MD_DEP_AUM`: 12×12 time series
-- `input_x_t_MD_NEW_INVST`: 12×21 time series
-- `input_x_t_MD_PDH_AUM`: 12×30 time series
+#### BLOCK_MD_BRN_CONTACTS（9 個特徵）
+- `input_x_o_MD_BRN_CONTACTS`：16 個連續特徵
+- `input_x_c_1_MD_BRN_CONTACTS` 到 `input_x_c_8_MD_BRN_CONTACTS`：8 個類別特徵
 
-## 🛠️ Customization
+#### 時間序列（3 個特徵）
+- `input_x_t_MD_CASH_FLOW`：12×22 時間序列
+- `input_x_t_MD_CUS_EXCH`：12×12 時間序列
+- `input_x_t_MD_CUS_LOAN`：12×24 時間序列
 
-### Modify Number of Samples
+#### BLOCK_MD_CUS_RISK（9 個特徵）
+- `input_x_o_MD_CUS_RISK`：1 個連續特徵
+- `input_x_c_1_MD_CUS_RISK` 到 `input_x_c_8_MD_CUS_RISK`：8 個類別特徵
 
-In `1_data_generation.ipynb`, change:
+#### BLOCK_MD_CUS_STYLE（8 個特徵）
+- `input_x_o_MD_CUS_STYLE`：35 個連續特徵
+- `input_x_c_1_MD_CUS_STYLE` 到 `input_x_c_7_MD_CUS_STYLE`：7 個類別特徵
+
+#### 額外時間序列（3 個特徵）
+- `input_x_t_MD_DEP_AUM`：12×12 時間序列
+- `input_x_t_MD_NEW_INVST`：12×21 時間序列
+- `input_x_t_MD_PDH_AUM`：12×30 時間序列
+
+## 🛠️ 客製化
+
+### 修改樣本數量
+
+在 watsonx.ai 平台上編輯 `1_data_generation.ipynb`，變更：
 ```python
-num_samples = 100  # Change to desired number
+num_samples = 100  # 變更為所需數量
 ```
 
-### Load Your Own H5 Model
+### 載入您自己的 H5 模型
 
-In `2_model_training_and_deployment.ipynb`, replace the demonstration model section with:
+在 watsonx.ai 平台上編輯 `2_model_training_and_deployment.ipynb`，將示範模型部分替換為：
 ```python
-# Load from project assets using Code Snippets
+# 從專案資產載入您的 H5 模型
 h5_model_content = client.data_assets.get_content('YOUR_H5_MODEL_ASSET_ID')
 with open('temp_model.h5', 'wb') as f:
     f.write(h5_model_content)
 model = keras.models.load_model('temp_model.h5')
 ```
 
-### Implement Actual Training
+### 實作實際訓練
 
-In `2_model_training_and_deployment.ipynb`, implement proper data preprocessing and training:
+在 watsonx.ai 平台上編輯 `2_model_training_and_deployment.ipynb`，實作適當的資料前處理和訓練：
 ```python
-# Prepare X_train (list of 32 input arrays) and y_train (list of 3 output arrays)
-X_train = [...]  # 32 arrays
-y_train = [...]  # 3 arrays
+# 準備 X_train（32 個輸入陣列的列表）和 y_train（3 個輸出陣列的列表）
+X_train = [...]  # 32 個陣列
+y_train = [...]  # 3 個陣列
 
-# Train model
+# 訓練模型
 history = model.fit(
     X_train,
     y_train,
@@ -269,89 +275,91 @@ history = model.fit(
 )
 ```
 
-### Change Number of Test Samples
+### 變更測試樣本數量
 
-In `3_deployment_testing.ipynb`, change:
+在 watsonx.ai 平台上編輯 `3_deployment_testing.ipynb`，變更：
 ```python
-num_test_samples = 5  # Change to desired number
+num_test_samples = 5  # 變更為所需數量
 ```
 
-## 📝 Notes
+## 📝 注意事項
 
-### Important Considerations
+### 重要考量
 
-1. **Data Preprocessing**: The notebooks demonstrate the workflow. In production, implement proper data preprocessing based on your specific data format.
+1. **執行環境**：這些 notebook 必須在 **watsonx.ai 平台**上執行，而非本地 Jupyter 環境。
 
-2. **Model Loading**: The demonstration creates a simplified model. For production, load your actual pre-trained H5 model from project assets.
+2. **環境變數**：在 watsonx.ai 專案設定中配置環境變數，切勿在程式碼中硬編碼 API 金鑰。
 
-3. **Training**: Actual model training requires proper data preprocessing to convert CSV data into the correct input format (32 separate arrays).
+3. **資料前處理**：筆記本展示工作流程。在生產環境中，根據您的特定資料格式實作適當的資料前處理。
 
-4. **Environment Variables**: Always use environment variables for credentials. Never hardcode API keys.
+4. **模型載入**：示範建立簡化的模型。在生產環境中，從專案資產載入您實際的預訓練 H5 模型。
 
-5. **Automatic Deployment**: Notebook 2 now automatically deploys the model. If a deployment with the same name exists, it will be replaced.
+5. **訓練**：實際的模型訓練需要適當的資料前處理，將 CSV 資料轉換為正確的輸入格式（32 個獨立陣列）。
 
-6. **Deployment Naming**: The deployment name follows the pattern `{MODEL_NAME}_deployment`. Ensure this name is unique in your space.
+6. **自動部署**：筆記本 2 會自動部署模型。如果存在同名部署，將會被替換。
 
-### Troubleshooting
+7. **部署命名**：部署名稱遵循模式 `{MODEL_NAME}_deployment`。確保此名稱在您的空間中是唯一的。
 
-**Issue**: "Required environment variables are missing"
-- **Solution**: Set PROJECT_ID, SPACE_ID, and WX_API_KEY environment variables
+### 疑難排解
 
-**Issue**: "No training data found in project assets"
-- **Solution**: Run notebook 1 first to generate and upload training data
+**問題**：「缺少必要的環境變數」
+- **解決方案**：在 watsonx.ai 專案設定中配置 PROJECT_ID、SPACE_ID 和 WX_API_KEY 環境變數
 
-**Issue**: "Model architecture mismatch"
-- **Solution**: Ensure your H5 model has the same input/output structure as defined in the configuration
+**問題**：「在專案資產中找不到訓練資料」
+- **解決方案**：先執行筆記本 1 以產生並上傳訓練資料
 
-**Issue**: "Deployment not found" (Notebook 3)
-- **Solution**:
-  1. Ensure notebook 2 completed successfully and created the deployment
-  2. Verify DEPLOYMENT_NAME matches the deployment name (should be `{MODEL_NAME}_deployment`)
-  3. Check that SPACE_ID is correct
-  4. Review the list of available deployments shown in the error message
+**問題**：「模型架構不匹配」
+- **解決方案**：確保您的 H5 模型具有與配置中定義相同的輸入/輸出結構
 
-**Issue**: "401 Unauthorized" (Notebook 3)
-- **Solution**: Check that your WX_API_KEY is valid and has access to the deployment space
+**問題**：「找不到部署」（筆記本 3）
+- **解決方案**：
+  1. 確保筆記本 2 成功完成並建立了部署
+  2. 驗證 DEPLOYMENT_NAME 與部署名稱相符（應為 `{MODEL_NAME}_deployment`）
+  3. 檢查 SPACE_ID 是否正確
+  4. 查看錯誤訊息中顯示的可用部署列表
 
-**Issue**: "Deployment failed" (Notebook 2)
-- **Solution**:
-  1. Check the error message in the deployment status
-  2. Verify the model format is correct (SavedModel)
-  3. Ensure the runtime specification matches your TensorFlow version
-  4. Check deployment space quotas and limits
+**問題**：「401 未授權」（筆記本 3）
+- **解決方案**：檢查您的 WX_API_KEY 是否有效且具有部署空間的存取權限
 
-## 🔗 Related Files
+**問題**：「部署失敗」（筆記本 2）
+- **解決方案**：
+  1. 檢查部署狀態中的錯誤訊息
+  2. 驗證模型格式是否正確（SavedModel）
+  3. 確保執行時規格與您的 TensorFlow 版本相符
+  4. 檢查部署空間配額和限制
 
-- `../model_migration/src/generate_input_data_example.py` - Reference for input data generation
-- `../model_migration/model/init_weight_savedmodel_20260310_181624/` - Example SavedModel structure
-- `../model_migration/台新提供資料/init_weight.h5` - Original H5 model
+## 🔗 相關檔案
 
-## 📚 Additional Resources
+- `../model_migration/src/generate_input_data_example.py` - 輸入資料產生的參考
+- `../model_migration/model/init_weight_savedmodel_20260310_181624/` - SavedModel 結構範例
+- `../model_migration/台新提供資料/init_weight.h5` - 原始 H5 模型
 
-- [watsonx.ai Documentation](https://www.ibm.com/docs/en/watsonx-as-a-service)
-- [TensorFlow SavedModel Guide](https://www.tensorflow.org/guide/saved_model)
+## 📚 其他資源
+
+- [watsonx.ai 文件](https://www.ibm.com/docs/en/watsonx-as-a-service)
+- [TensorFlow SavedModel 指南](https://www.tensorflow.org/guide/saved_model)
 - [IBM watsonx.ai Python SDK](https://ibm.github.io/watsonx-ai-python-sdk/)
 - [watsonx.ai REST API](https://cloud.ibm.com/apidocs/machine-learning)
 
-## ✅ Success Criteria
+## ✅ 成功標準
 
-After running all three notebooks successfully, you should have:
-- ✅ CSV training data uploaded to watsonx.ai project assets
-- ✅ TensorFlow model stored in watsonx.ai deployment space
-- ✅ Model automatically deployed with online endpoint
-- ✅ Deployment in "ready" state
-- ✅ Verified predictions from deployed model
-- ✅ Prediction results saved to JSON file
+成功執行所有三個筆記本後，您應該擁有：
+- ✅ CSV 訓練資料已上傳至 watsonx.ai 專案資產
+- ✅ TensorFlow 模型已儲存在 watsonx.ai 部署空間
+- ✅ 模型已自動部署並具有線上端點
+- ✅ 部署處於「就緒」狀態
+- ✅ 已驗證已部署模型的預測
+- ✅ 預測結果已儲存至 JSON 檔案
 
-## 🎯 Next Steps
+## 🎯 後續步驟
 
-1. Implement proper data preprocessing for your specific use case
-2. Load your actual pre-trained H5 model
-3. Perform actual model training/fine-tuning with real data
-4. Monitor model performance in production
-5. Set up automated retraining pipelines
-6. Implement model versioning and A/B testing
-7. Create automated testing and validation workflows
-8. Add deployment health checks and monitoring
-9. Implement rollback mechanisms for failed deployments
-10. Set up CI/CD pipelines for automated model updates
+1. 為您的特定使用案例實作適當的資料前處理
+2. 載入您實際的預訓練 H5 模型
+3. 使用真實資料執行實際的模型訓練/微調
+4. 監控生產環境中的模型效能
+5. 設定自動化重新訓練流程
+6. 實作模型版本控制和 A/B 測試
+7. 建立自動化測試和驗證工作流程
+8. 新增部署健康檢查和監控
+9. 實作失敗部署的回滾機制
+10. 設定 CI/CD 流程以進行自動化模型更新

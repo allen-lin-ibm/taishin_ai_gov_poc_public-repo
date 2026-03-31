@@ -19,7 +19,9 @@ All components include complete end-to-end workflows from model development to d
 .
 ├── model_migration/
 │   ├── h5_model_migration_watsonx_ai_complete_flow.ipynb
-│   ├── init_weight_savedmodel_scoring_input_data_example.json
+│   ├── single_batch_savedmodel_scoring_input_data_example.json
+│   ├── 2_batch_savedmodel_scoring_input_data_example.json
+│   ├── README.md
 │   └── 台新提供資料/
 │       ├── df_simulate.pkl
 │       └── init_weight.h5
@@ -29,6 +31,7 @@ All components include complete end-to-end workflows from model development to d
 │   ├── train_xgboost_ltr_watsonx_ai_complete_flow.ipynb
 │   ├── LTR_model_input.csv
 │   ├── ltr_scoring_input_data_example.json
+│   ├── README.md
 │   └── 台新提供資料/
 │       ├── 演算法資訊.txt
 │       └── LTR_data_structure.xlsx
@@ -40,7 +43,8 @@ All components include complete end-to-end workflows from model development to d
 │   └── README.md
 │
 ├── parameter_set_showcase/
-│   └── parameter_set_showcase.ipynb
+│   ├── parameter_set_showcase.ipynb
+│   └── README.md
 │
 ├── LICENSE
 └── README.md
@@ -65,6 +69,8 @@ Complete pipeline for migrating TensorFlow Keras H5 models to SavedModel format:
 - watsonx.ai deployment
 - Deployed model testing and validation
 
+📖 **[View detailed documentation](model_migration/README.md)**
+
 ### 2. LTR Model Implementation
 
 Learning-to-Rank model development using LightGBM LambdaMART with XGBoost conversion:
@@ -81,14 +87,17 @@ Learning-to-Rank model development using LightGBM LambdaMART with XGBoost conver
 - watsonx.ai deployment
 - Online scoring and testing
 
+📖 **[View detailed documentation](ltr_model_implementation/README.md)**
+
 ### 3. Orchestration Pipeline
 
-Automated end-to-end workflow demonstrating complete model lifecycle management:
+Automated end-to-end workflow demonstrating complete model lifecycle management on **watsonx.ai platform**:
 
 - **Pipeline**: Data Generation → Model Training → Deployment → Testing
 - **Model**: TensorFlow multi-output classification model
 - **Automation**: Automatic deployment and testing
 - **Integration**: Full watsonx.ai SDK integration
+- **Execution**: Designed to run on watsonx.ai platform (not local environment)
 
 **Workflow includes:**
 - Synthetic training data generation and upload
@@ -97,6 +106,8 @@ Automated end-to-end workflow demonstrating complete model lifecycle management:
 - Automated deployment to watsonx.ai
 - Batch prediction testing and validation
 - Result persistence and analysis
+
+📖 **[View detailed documentation](orchestration_pipeline/README.md)**
 
 ### 4. Parameter Set Showcase
 
@@ -113,6 +124,8 @@ Demonstration of IBM watsonx.ai Parameter Sets functionality:
 - Accessing parameter sets by name
 - Viewing parameter values and configurations
 
+📖 **[View detailed documentation](parameter_set_showcase/README.md)**
+
 ## Getting Started
 
 ### Prerequisites
@@ -122,7 +135,7 @@ Demonstration of IBM watsonx.ai Parameter Sets functionality:
 - LightGBM
 - XGBoost 2.0+
 - IBM watsonx.ai Python SDK
-- Jupyter Notebook
+- Jupyter Notebook (for local notebooks) or watsonx.ai platform access (for orchestration pipeline)
 
 ### Installation
 
@@ -131,9 +144,11 @@ Demonstration of IBM watsonx.ai Parameter Sets functionality:
 git clone <repository-url>
 cd taishin_ai_gov_poc_public-repo
 
-# Install required packages
-pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter
+# Install required packages (for local notebooks)
+pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter numpy pandas
 ```
+
+**Note**: The orchestration pipeline notebooks are designed to run on the watsonx.ai platform and do not require local installation.
 
 ### Usage
 
@@ -143,30 +158,36 @@ pip install tensorflow==2.14 lightgbm xgboost ibm-watsonx-ai jupyter
 2. Configure watsonx.ai credentials
 3. Run all cells to execute the complete migration pipeline
 
+📖 **[Detailed instructions](model_migration/README.md)**
+
 #### 2️⃣ LTR Model Development
 
 1. Open [`ltr_model_implementation/lightgbm_ltr_watsonx_ai_complete_flow.ipynb`](ltr_model_implementation/lightgbm_ltr_watsonx_ai_complete_flow.ipynb) or [`ltr_model_implementation/train_xgboost_ltr_watsonx_ai_complete_flow.ipynb`](ltr_model_implementation/train_xgboost_ltr_watsonx_ai_complete_flow.ipynb)
 2. Configure watsonx.ai credentials
 3. Run all cells to train, convert, and deploy the LTR model
 
+📖 **[Detailed instructions](ltr_model_implementation/README.md)**
+
 #### 3️⃣ Orchestration Pipeline
+
+**Important**: These notebooks must be run on the **watsonx.ai platform**, not in a local environment.
 
 **Complete 3-step workflow:**
 
-1. **Data Generation**: Open [`orchestration_pipeline/1_data_generation.ipynb`](orchestration_pipeline/1_data_generation.ipynb)
+1. **Data Generation**: Open [`orchestration_pipeline/1_data_generation.ipynb`](orchestration_pipeline/1_data_generation.ipynb) on watsonx.ai
    - Generates synthetic training data
    - Uploads to watsonx.ai project assets
 
-2. **Model Training & Deployment**: Open [`orchestration_pipeline/2_model_training_and_deployment.ipynb`](orchestration_pipeline/2_model_training_and_deployment.ipynb)
+2. **Model Training & Deployment**: Open [`orchestration_pipeline/2_model_training_and_deployment.ipynb`](orchestration_pipeline/2_model_training_and_deployment.ipynb) on watsonx.ai
    - Automatically finds latest training data
    - Trains and converts model to SavedModel
    - Deploys to watsonx.ai automatically
 
-3. **Deployment Testing**: Open [`orchestration_pipeline/3_deployment_testing.ipynb`](orchestration_pipeline/3_deployment_testing.ipynb)
+3. **Deployment Testing**: Open [`orchestration_pipeline/3_deployment_testing.ipynb`](orchestration_pipeline/3_deployment_testing.ipynb) on watsonx.ai
    - Tests deployed model with batch predictions
    - Saves and analyzes results
 
-See [`orchestration_pipeline/README.md`](orchestration_pipeline/README.md) for detailed documentation.
+📖 **[Detailed instructions](orchestration_pipeline/README.md)**
 
 #### 4️⃣ Parameter Set Management
 
@@ -178,9 +199,11 @@ See [`orchestration_pipeline/README.md`](orchestration_pipeline/README.md) for d
    - Retrieve by ID or name
    - View parameter configurations
 
+📖 **[Detailed instructions](parameter_set_showcase/README.md)**
+
 ## watsonx.ai Integration
 
-Both workflows support deployment to IBM watsonx.ai platform with:
+All workflows support deployment to IBM watsonx.ai platform with:
 
 - **CP4D (on-premises)** deployment
 - **IBM Cloud** deployment
@@ -192,7 +215,8 @@ Refer to the [IBM watsonx.ai Python SDK Documentation](https://ibm.github.io/wat
 ### Model Migration
 - `init_weight.h5`: Original Keras H5 model
 - `df_simulate.pkl`: Simulation data for testing
-- `init_weight_savedmodel_scoring_input_data_example.json`: Sample scoring input
+- `single_batch_savedmodel_scoring_input_data_example.json`: Single sample scoring input
+- `2_batch_savedmodel_scoring_input_data_example.json`: Batch scoring input (2 samples)
 
 ### LTR Implementation
 - `LTR_model_input.csv`: Training data for LTR model
@@ -204,6 +228,15 @@ Refer to the [IBM watsonx.ai Python SDK Documentation](https://ibm.github.io/wat
 - Generated training data: `model_input_data_YYYYMMDD_HHMMSS.csv` (auto-generated)
 - Prediction results: `prediction_results_YYYYMMDD_HHMMSS.json` (auto-generated)
 - Model archive: `{MODEL_NAME}.zip` (auto-generated)
+
+## Documentation
+
+Each component has its own detailed README:
+
+- 📖 [Model Migration Documentation](model_migration/README.md)
+- 📖 [LTR Model Implementation Documentation](ltr_model_implementation/README.md)
+- 📖 [Orchestration Pipeline Documentation](orchestration_pipeline/README.md)
+- 📖 [Parameter Set Showcase Documentation](parameter_set_showcase/README.md)
 
 ## License
 
