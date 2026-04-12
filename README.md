@@ -4,12 +4,14 @@ A proof-of-concept project demonstrating AI model governance capabilities for Ta
 
 ## Overview
 
-This repository contains four main components:
+This repository contains six main components:
 
 1. **Model Migration**: Converting legacy TensorFlow H5 models to SavedModel format
 2. **LTR Model Implementation**: Developing and deploying Learning-to-Rank models using LightGBM/XGBoost
-3. **Orchestration Pipeline**: End-to-end automated workflow for data generation, model training, and deployment
-4. **Parameter Set Showcase**: Demonstration of watsonx.ai Parameter Sets usage and management
+3. **Batch Deployment Scoring**: Inline batch scoring with watsonx.ai batch deployments
+4. **Monthly 10M Batch Prediction**: Large-scale monthly batch prediction workflow (10M+ records)
+5. **Orchestration Pipeline**: End-to-end automated workflow for data generation, model training, and deployment
+6. **Parameter Set Showcase**: Demonstration of watsonx.ai Parameter Sets usage and management
 
 All components include complete end-to-end workflows from model development to deployment on IBM watsonx.ai platform.
 
@@ -35,6 +37,21 @@ All components include complete end-to-end workflows from model development to d
 │   └── 台新提供資料/
 │       ├── 演算法資訊.txt
 │       └── LTR_data_structure.xlsx
+│
+├── batch_deployment_scoring/
+│   ├── batch_deployment_scoring_with_inline_input.ipynb
+│   ├── 2_batch_savedmodel_scoring_input_data_example.json
+│   └── job_log/
+│
+├── monthly_10m_batch_prediction/
+│   ├── monthly_prediction_1_convert_csv_to_json.ipynb
+│   ├── monthly_prediction_2_zip_all_json_files.ipynb
+│   ├── monthly_prediction_3_upload_and_create_job.ipynb
+│   └── data/
+│       ├── raw_csv/
+│       ├── json_files/
+│       ├── zipped/
+│       └── batch_scoring_output/
 │
 ├── orchestration_pipeline/
 │   ├── 1_data_generation.ipynb
@@ -89,7 +106,51 @@ Learning-to-Rank model development using LightGBM LambdaMART with XGBoost conver
 
 📖 **[View detailed documentation](ltr_model_implementation/README.md)**
 
-### 3. Orchestration Pipeline
+### 3. Batch Deployment Scoring
+
+Demonstration of inline batch scoring with watsonx.ai batch deployments:
+
+- **Method**: Inline input data (embedded in job payload)
+- **Deployment Type**: Batch deployment on watsonx.ai
+- **Model**: TensorFlow SavedModel with 32 inputs
+- **Features**: Job monitoring, result retrieval, and persistence
+
+**Workflow includes:**
+- Connecting to watsonx.ai and setting deployment space
+- Loading scoring data from deployment space assets
+- Creating batch scoring jobs with inline input
+- Monitoring job execution status in real-time
+- Retrieving and saving prediction results
+
+📖 **Documentation**: See notebook for detailed inline batch scoring workflow
+
+### 4. Monthly 10M Batch Prediction
+
+Large-scale batch prediction workflow for processing millions of records monthly:
+
+- **Scale**: Designed for 10M+ records per month
+- **Approach**: 3-step workflow with CSV to JSON conversion
+- **Processing**: Memory-efficient chunked processing
+- **Deployment**: Batch deployment on watsonx.ai
+- **Automation**: Automated file compression and upload
+
+**3-Step Workflow:**
+1. **CSV to JSON Conversion**: Convert large CSV files to individual JSON records
+   - Memory-efficient chunked processing (1000 records/batch)
+   - Configurable processing range for partial runs
+   - Automatic data download from watsonx.ai assets
+2. **ZIP Compression**: Compress all JSON files into a single archive
+   - Efficient batch compression
+   - Progress tracking
+   - Size optimization
+3. **Upload & Job Creation**: Upload to watsonx.ai and create batch job
+   - Automatic upload to deployment space
+   - Batch job creation and monitoring
+   - Result retrieval and storage
+
+📖 **Documentation**: See individual notebooks for each step
+
+### 5. Orchestration Pipeline
 
 Automated end-to-end workflow demonstrating complete model lifecycle management on **watsonx.ai platform**:
 
@@ -109,7 +170,7 @@ Automated end-to-end workflow demonstrating complete model lifecycle management 
 
 📖 **[View detailed documentation](orchestration_pipeline/README.md)**
 
-### 4. Parameter Set Showcase
+### 6. Parameter Set Showcase
 
 Demonstration of IBM watsonx.ai Parameter Sets functionality:
 
@@ -235,6 +296,8 @@ Each component has its own detailed README:
 
 - 📖 [Model Migration Documentation](model_migration/README.md)
 - 📖 [LTR Model Implementation Documentation](ltr_model_implementation/README.md)
+- 📖 [Batch Deployment Scoring](batch_deployment_scoring/batch_deployment_scoring_with_inline_input.ipynb) - See notebook for inline batch scoring workflow
+- 📖 [Monthly 10M Batch Prediction](monthly_10m_batch_prediction/) - See individual notebooks for 3-step workflow
 - 📖 [Orchestration Pipeline Documentation](orchestration_pipeline/README.md)
 - 📖 [Parameter Set Showcase Documentation](parameter_set_showcase/README.md)
 
